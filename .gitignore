@@ -1,0 +1,8 @@
+*/.terraform
+*/.terraform.lock.hcl
+*/main-plan.tfplan
+*/*.deb
+*/terraform.tfstate
+*/terraform.tfstate.backup
+remote
+ejecutar
