@@ -1,6 +1,7 @@
 */.terraform
 */.terraform.lock.hcl
 */main-plan.tfplan
+*/main-plan-destroy.tfplan
 */*.deb
 */terraform.tfstate
 */terraform.tfstate.backup

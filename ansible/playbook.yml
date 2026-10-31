@@ -2,6 +2,7 @@
 - name: Update web servers
   hosts: nexus
   remote_user: root
+  become: true
 
   tasks:
     - name: Crear usuario para el servicio nexus 
@@ -25,8 +26,8 @@
       command:
         cmd: tar xvz --keep-directory-symlink -f ./nexus-3.90.1-01-linux-x86_64.tar.gz
         chdir: /opt/
-        register: tar_output
-        changed_when: true
+      register: tar_output
+      changed_when: true
 
     - name: Cambiar el propietario de la carpeta de Nexus de forma recursiva
       ansible.builtin.file:
@@ -44,23 +45,27 @@
         recurse: true
         state: directory
 
-    - name: Insert/Update HTML surrounded by custom markers after <body> line
+    - name: Crear servicio nexus 
       blockinfile:
         path: /etc/systemd/system/nexus.service
+        create: true
         block: |
           [Unit]
           Description=nexus service
           After=network.target
+
           [Service]
           Type=forking
           LimitNOFILE=65536
-          ExecStart=/opt/nexus-3.90.1-01/nexus/bin/nexus start
-          ExecStop=/opt/nexus-3.90.1-01/nexus/bin/nexus stop
+          ExecStart=/opt/nexus-3.90.1-01/bin/nexus start
+          ExecStop=/opt/nexus-3.90.1-01/bin/nexus stop
           User=nexus
           Restart=on-abort
           TimeoutSec=600
+          
           [Install]
           WantedBy=multi-user.target
+      
 
     - name: Recargar el daemon de systemd
       systemd:
@@ -71,19 +76,3 @@
         name: nexus.service
         state: started
         enabled: true 
-
-- name: Instalar NGINX personalizado
-  hosts: nginx
-  remote_user: root
-
-  tasks:
-    - name: Configurar repositorio APT 
-      blockinfile:
-        path: /etc/apt/sources.list.d/nexus.sources 
-        block: |
-          deb http://<tu-ip-nexus>:8081/repository/apt-hosted/ jammy main
-    
-    - name: Actualizar repositorio
-      apt:
-        update_cache: yes
-

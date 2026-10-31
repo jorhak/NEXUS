@@ -35,19 +35,19 @@ terraform apply main-plan.tfplan
 ```
 # Copiar nginx-custom_1.26.1_amd64.deb 
 ```
-scp -i ./infra-terraform/nexus-pk.pem ./infra-terraform/nginx-custom_1.26.1_amd64.deb ubuntu@<IP_PUBLICA de la instancia publica>:/home/ubuntu/
+scp -i infra-terraform/nexus-kp.pem infra-terraform/nginx-custom_1.26.1_amd64.deb ubuntu@3.148.228.118:/home/ubuntu/
 ```
 # Copiar llave 
 ```
-scp -i ./infra-terraform/nexus-pk.pem ./infra-terraform/nexus-pk.pem ubuntu@<IP_PUBLICA de la instancia publica>:/home/ubuntu/
+scp -i infra-terraform/nexus-kp.pem infra-terraform/nexus-kp.pem ubuntu@3.148.228.118:/home/ubuntu/
 ```
 # Copiar directorio ansible 
 ```
-scp -i ./infra-terraform/nexus-pk.pem -r ansible/ ubuntu@<IP_PUBLICA de la instancia>:/home/ubuntu/
+scp -i infra-terraform/nexus-kp.pem -r ansible/ ubuntu@3.148.228.118:/home/ubuntu/
 ```
 # Configurar a la instancia publica 
 ```
-ssh -i ./infra-terraform/nexus-kp.pem ubuntu@<IP_PUBLICA de la instanica>
+ssh -i infra-terraform/nexus-kp.pem ubuntu@3.148.228.118
 ```
 ## Configurar inventory
 Se deben acutalizar las IP y realizar una prueba de ping 
@@ -74,6 +74,7 @@ Debemos crear las llaves PGP para configurar **Nexus**. Nos encotramos en el
 servidor publico desde donde tenemos llegada a los servidores privados.
 ```
 ssh -i nexus-kp.pem ubuntu@<IP_PRIVADA de la instacia Nexus>
+ssh -i nexus-kp.pem ubuntu@10.0.2.xx
 ```
 ## Crear llave GPG 
 ```
@@ -97,14 +98,14 @@ de navegacion la **IP PRIVADA Y PUERTO** de la instancia donde estamos intalando
 **Nexus**.
 Para obtener la contrasena del usuario **admin** ejecutamos el siguiente comando
 ```
-vi /opt/sonatype_work/
+cat /opt/sonatype-work/nexus3/admin.password
 ```
 Una ves ingresamos nos va solicitar que cambiemos la contrasena.
 ## Crear usuario
 Nos vamos a dirigir **Settings**(Rueda dentada)->Security->User luego damos click 
 en crear usuario.
 ## Crear repositorio 
-Nos dirigimos a **Repository** y luego damos click sobre **Create repository** y seleccionamos _apt (hosted)_, le asignamos un nombre, distribucion y le agregamos 
+Nos dirigimos a **Repositories** y luego damos click sobre **Create repository** y seleccionamos _apt (hosted)_, le asignamos un nombre, distribucion y le agregamos 
 la llave privada (mi_llave_privada.asc)
 Despues de ser creado nuestro repositorio debemos copiar la URL para poder 
 realizar la instalacion de los paquetes en los servidores clientes.
@@ -112,16 +113,21 @@ realizar la instalacion de los paquetes en los servidores clientes.
 Nos ubicamos en el servidor publico y desde ahi copiamos la llave para ingresar
 al servidor cliente.
 ```
-scp -i nexus-pk.pem nexus-pk.pem ubuntu@<IP PRIVADA de la instancia cliente>:/home/ubuntu
+scp -i nexus-kp.pem nexus-kp.pem ubuntu@<IP PRIVADA de la instancia cliente>:/home/ubuntu
+
+scp -i nexus-kp.pem nexus-kp.pem ubuntu@10.0.2.xx:/home/ubuntu
 ```
 ## Ingresar al servidor cliente
 ```
-ssh -i nexus-pk.pem ubuntu@<IP PRIVADA de la instancia cliente>
+ssh -i nexus-kp.pem ubuntu@<IP PRIVADA de la instancia cliente>
+ssh -i nexus-kp.pem ubuntu@10.0.2.xx
 ```
 ## Copiar llave publica PGP
 Vamos a copiar la llave publica que se encuentra en el servidor Nexus
 ```
-scp -i nexus-pk.pem ubuntu@<IP PRIVADA de la instancia nexus>:/home/ubuntu/mi_repositorio.pub . 
+scp -i nexus-kp.pem ubuntu@<IP PRIVADA de la instancia nexus>:/home/ubuntu/mi_repositorio.pub .
+
+scp -i nexus-kp.pem ubuntu@10.0.2.xx:/home/ubuntu/mi_repositorio.pub .
 ```
 ### Agregar llave publica PGP 
 ```
@@ -147,7 +153,7 @@ sudo vi /etc/apt/auth.conf.d/nexus.conf
 ```
 
 ```
-nexus http://<IP PRIVADA instancia Nexus:8081/repository/paquetes_internos/ login pier password xxxxxxx
+machine http://<IP PRIVADA instancia Nexus>:8081/repository/paquetes_internos/ login pier password xxxxxxx
 ```
 #### Limpiar repositorio
 ```

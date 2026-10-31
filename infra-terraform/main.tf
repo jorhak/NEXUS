@@ -239,7 +239,10 @@ resource "aws_instance" "instancia_publica" {
 
               # Colocar la hora de Bolivia
               timedatectl set-timezone America/La_Paz
+              # Instalar navegador
               apt-get install -y chromium-browser
+              # Instalar ansible
+              apt-get install -y ansible
               EOF
 
   tags = {
@@ -261,6 +264,8 @@ resource "aws_instance" "instancia_privada" {
               # Cambiar hostname
               hostnamectl set-hostname servidor-nexus
               echo "127.0.0.1 servidor-nexus" >> /etc/hosts
+              # Colocar la hora de Bolivia
+              timedatectl set-timezone America/La_Paz
               EOF
   tags = {
     Name = "nexus-instancia-private"
@@ -280,6 +285,8 @@ resource "aws_instance" "instancia_privada_dos" {
               # Cambiar hostname
               hostnamectl set-hostname servidor-cliente
               echo "127.0.0.1 servidor-cliente" >> /etc/hosts
+              # Colocar la hora de Bolivia
+              timedatectl set-timezone America/La_Paz
               EOF
   tags = {
     Name = "nexus-instancia-private"
