@@ -47,6 +47,7 @@ scp -i infra-terraform/nexus-kp.pem -r ansible/ ubuntu@3.148.228.118:/home/ubunt
 ```
 # Configurar a la instancia publica 
 ```
+infocmp -x | ssh -i infra-terraform/nexus-kp.pem ubuntu@<IP PUBLICA> -- tic -x -
 ssh -i infra-terraform/nexus-kp.pem ubuntu@3.148.228.118
 ```
 ## Configurar inventory
@@ -73,8 +74,9 @@ Ahora si podemos ingresar desde **Remmina** y nos va solicitar usuario y contras
 Debemos crear las llaves PGP para configurar **Nexus**. Nos encotramos en el 
 servidor publico desde donde tenemos llegada a los servidores privados.
 ```
+infocmp -x | ssh -i nexus-kp.pem ubuntu@10.0.2.XXX -- tic -x -
 ssh -i nexus-kp.pem ubuntu@<IP_PRIVADA de la instacia Nexus>
-ssh -i nexus-kp.pem ubuntu@10.0.2.xx
+ssh -i nexus-kp.pem ubuntu@10.0.2.XXX
 ```
 ## Crear llave GPG 
 ```
@@ -119,8 +121,9 @@ scp -i nexus-kp.pem nexus-kp.pem ubuntu@10.0.2.xx:/home/ubuntu
 ```
 ## Ingresar al servidor cliente
 ```
+infocmp -x | ssh -i nexus-kp.pem ubuntu@10.0.2.XXX -- tic -x -
 ssh -i nexus-kp.pem ubuntu@<IP PRIVADA de la instancia cliente>
-ssh -i nexus-kp.pem ubuntu@10.0.2.xx
+ssh -i nexus-kp.pem ubuntu@10.0.2.XXX
 ```
 ## Copiar llave publica PGP
 Vamos a copiar la llave publica que se encuentra en el servidor Nexus
