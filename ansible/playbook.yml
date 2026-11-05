@@ -88,9 +88,10 @@
         update_cache: yes
     
     - name: Instalar dependencias
-      pkg:
-        - ca-certificates
-        - curl
+      apt:
+        pkg:
+          - ca-certificates
+          - curl
 
     - name: Crear directorio para las llaves 
       ansible.builtin.file:
@@ -112,11 +113,10 @@
         block: |
           Types: deb
           URIs: https://download.docker.com/linux/ubuntu
-          Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+          Suites: jammy
           Components: stable
-          Architectures: $(dpkg --print-architecture)
+          Architectures: amd64
           Signed-By: /etc/apt/keyrings/docker.asc
-        become: true
 
     - name: Actualizar repositorio
       apt:
@@ -134,7 +134,7 @@
     - name: Habilitar servicio 
       service:
         name: docker 
-        state: enabled
+        enabled: true
 
     - name: Iniciar servicio
       service:
@@ -147,6 +147,9 @@
         groups: docker
         append: yes
 
+    - name: Reiniciar la conexion SSH para aplicar los cambios de grupo
+      ansible.builtin.meta: reset_connection
+      
 - name: Probar comandos de Docker sin sudo
   hosts: docker
   become: false

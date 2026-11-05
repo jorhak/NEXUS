@@ -1,5 +1,5 @@
 [nexus]
-repo ansible_host=10.0.2.XXX ansible_user=ubuntu ansible_ssh_private_key_file=../nexus-kp.pem ansible_port=22
+repository ansible_host=10.0.2.XXX ansible_user=ubuntu ansible_ssh_private_key_file=../nexus-kp.pem ansible_port=22
 
 [docker]
-repo ansible_host=10.0.2.XXX ansible_user=ubuntu ansible_ssh_private_key_file=../nexus-kp.pem ansible_port=22
+registry ansible_host=10.0.2.XXX ansible_user=ubuntu ansible_ssh_private_key_file=../nexus-kp.pem ansible_port=22

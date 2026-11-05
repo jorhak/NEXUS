@@ -54,10 +54,22 @@ ssh -i infra-terraform/nexus-kp.pem ubuntu@3.148.228.118
 ## Configurar inventory
 Se deben acutalizar las IP y realizar una prueba de ping 
 ```
-cd ansible 
+cd ansible
+vi inventory 
+```
+Reemplzar las **XXX** por el dato correspondiente a la IP 
+```
+[nexus]
+repositorio ansible_host=10.0.2.XXX ansible_user=ubuntu ansible_ssh_private_key_file=../nexus-kp.pem ansible_port=22
+
+[docker]
+registry ansible_host=10.0.2.XXX ansible_user=ubuntu ansible_ssh_private_key_file=../nexus-kp.pem ansible_port=22
+```
+Verificar que tenemos llegada a los servidores 
+```
 ansible all -m ping -i inventory 
 ```
-## Instalar Nexus con Ansible 
+## Instalar Nexus y Docker con Ansible 
 ```
 ansible-playbook -i inventory playbook.yml 
 ```
@@ -109,7 +121,7 @@ Nos vamos a dirigir **Settings**(Rueda dentada)->Security->User luego damos clic
 en crear usuario.
 ## Crear repositorio Docker
 Nos dirigimos a Repositories y luego damos click sobre **Create repository** y seleccionamos _docker \(hosted\)_, rellenamos el formulario:
-**Name**: dockerRepository
+**Name**: docker-repository
 **HTTP**: 5000
 **Deploymen policy**: Allow deployment 
 Todo lo demas lo dejamos como esta y damos click sobre el boton **Create repository**.
@@ -183,9 +195,17 @@ Nos dirigimos a **Remmina**, ingresamos al servidor publico y abrimos el
 navegador y en la barra de navegacion colocamos la **IP PRIVADA** de la instancia cliente y debe aparecer nuestro **Nginx** personalizado.
 # Configurar servidor Docker
 Nos dirigimos al servidor Docker para configura lo para que pueda subir y descargar imagnes del repositorio privado.
+## Ingresar al servidor
+Debemos estar dentro del servidor publico y desde ahi ejecutamos
+```
+infocmp -x | ssh -i nexus-kp.pem ubuntu@10.0.2.XXX -- tic -x -
+ssh -i nexus-kp.pem ubuntu@10.0.2.XXX
+```
+## Agregar configuracion
+Esta configuracion nos va permitir subir y descargar imagenes del registry.
 ```
 sudo mkdir -p /etc/docker
-echo '{"insecure-registries":["10.0.2.XXX:5000"]} | sudo tee /etc/docker/daemon.json'
+echo '{"insecure-registries":["10.0.2.XXX:5000"]}' | sudo tee /etc/docker/daemon.json
 sudo systemctl restart docker
 docker info | tail -n 10
 ```
@@ -198,15 +218,15 @@ docker login -u pier 10.0.2.XXX:5000
 ```
 docker pull alpine:latest
 docker tag alpine:latest 10.0.2.XXX:5000/alpine:pier 
-docker push 10.0.2.XXX/alpine:pier 
+docker push 10.0.2.XXX:5000/alpine:pier 
 ```
 ### Ver catalogo
 ```
-curl -u pier http://10.0.2.XXX:5000/v2/catalog 
+curl -u pier http://10.0.2.XXX:5000/v2/_catalog 
 ```
 ### Descargar imagenes desde Nexus
 ```
-docker pull 10.0.2.XXX/alpine:pier 
+docker pull 10.0.2.XXX:5000/alpine:pier 
 ```
 # Eliminar infraestructura
 ```
