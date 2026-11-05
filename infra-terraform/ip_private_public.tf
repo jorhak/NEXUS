@@ -22,3 +22,8 @@ output "instancia_privada_dos_ip_privada" {
   value       = aws_instance.instancia_privada_dos.private_ip
   description = "Dirección IP interna de la segunda máquina privada"
 }
+
+output "instancia_privada_tres_ip_privada" {
+  value       = aws_instance.instancia_privada_tres.private_ip
+  description = "Dirección IP interna de la tercer máquina privada"
+}

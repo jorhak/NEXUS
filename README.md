@@ -15,7 +15,8 @@ salida a internet.
 1. AWS CLI 
 2. Terraform
 3. Ansible
-4. Remmina
+4. Docker
+5. Remmina
 
 # Solucion 
 Para levantar toda la arquitectura vamos a utilizar **Terraform**, de igual modo 
@@ -106,7 +107,13 @@ Una ves ingresamos nos va solicitar que cambiemos la contrasena.
 ## Crear usuario
 Nos vamos a dirigir **Settings**(Rueda dentada)->Security->User luego damos click 
 en crear usuario.
-## Crear repositorio 
+## Crear repositorio Docker
+Nos dirigimos a Repositories y luego damos click sobre **Create repository** y seleccionamos _docker \(hosted\)_, rellenamos el formulario:
+**Name**: dockerRepository
+**HTTP**: 5000
+**Deploymen policy**: Allow deployment 
+Todo lo demas lo dejamos como esta y damos click sobre el boton **Create repository**.
+## Crear repositorio APT 
 Nos dirigimos a **Repositories** y luego damos click sobre **Create repository** y seleccionamos _apt (hosted)_, le asignamos un nombre, distribucion y le agregamos 
 la llave privada (mi_llave_privada.asc)
 Despues de ser creado nuestro repositorio debemos copiar la URL para poder 
@@ -166,7 +173,7 @@ sudo apt clean
 ```
 sudo apt update 
 ```
-# Verificar
+# Verificar APT 
 Vamos a verificar que nuestro paquete ya esta disponible para instalarse.
 ```
 sudo apt search nginx-custom
@@ -174,6 +181,33 @@ sudo apt install nginx-custom
 ```
 Nos dirigimos a **Remmina**, ingresamos al servidor publico y abrimos el 
 navegador y en la barra de navegacion colocamos la **IP PRIVADA** de la instancia cliente y debe aparecer nuestro **Nginx** personalizado.
+# Configurar servidor Docker
+Nos dirigimos al servidor Docker para configura lo para que pueda subir y descargar imagnes del repositorio privado.
+```
+sudo mkdir -p /etc/docker
+echo '{"insecure-registries":["10.0.2.XXX:5000"]} | sudo tee /etc/docker/daemon.json'
+sudo systemctl restart docker
+docker info | tail -n 10
+```
+# Verificar Docker 
+## Iniciar sesion 
+```
+docker login -u pier 10.0.2.XXX:5000
+```
+## Crear imagen 
+```
+docker pull alpine:latest
+docker tag alpine:latest 10.0.2.XXX:5000/alpine:pier 
+docker push 10.0.2.XXX/alpine:pier 
+```
+### Ver catalogo
+```
+curl -u pier http://10.0.2.XXX:5000/v2/catalog 
+```
+### Descargar imagenes desde Nexus
+```
+docker pull 10.0.2.XXX/alpine:pier 
+```
 # Eliminar infraestructura
 ```
 terraform plan -destroy --out main-plan-destroy.tfplan

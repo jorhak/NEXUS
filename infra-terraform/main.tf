@@ -268,7 +268,7 @@ resource "aws_instance" "instancia_privada" {
               timedatectl set-timezone America/La_Paz
               EOF
   tags = {
-    Name = "nexus-instancia-private"
+    Name = "nexus-instancia-private1"
     ENV  = "DEV"
     USER = "SNOW"
   }
@@ -289,12 +289,32 @@ resource "aws_instance" "instancia_privada_dos" {
               timedatectl set-timezone America/La_Paz
               EOF
   tags = {
-    Name = "nexus-instancia-private"
+    Name = "nexus-instancia-private2"
     ENV  = "DEV"
     USER = "SNOW"
   }
 }
 
+resource "aws_instance" "instancia_privada_tres" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "c7i-flex.large"
+  subnet_id              = aws_subnet.private_subnet.id 
+  vpc_security_group_ids = [aws_security_group.permisos.id]
+  key_name               = aws_key_pair.mi_llave_privada.key_name 
+  user_data = <<-EOF
+              #!/bin/bash
+              # Cambiar hostname
+              hostnamectl set-hostname servidor-docker
+              echo "127.0.0.1 servidor-docker" >> /etc/hosts
+              # Colocar la hora de Bolivia
+              timedatectl set-timezone America/La_Paz
+              EOF
+  tags = {
+    Name = "nexus-instancia-private3"
+    ENV  = "DEV"
+    USER = "SNOW"
+  }
+}
 
 
 

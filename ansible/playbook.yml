@@ -76,3 +76,87 @@
         name: nexus.service
         state: started
         enabled: true 
+
+- name: Servidor docker 
+  hosts: docker
+  remote_user: root
+  become: true
+
+  tasks:
+    - name: Actualizar repositorio
+      apt:
+        update_cache: yes
+    
+    - name: Instalar dependencias
+      pkg:
+        - ca-certificates
+        - curl
+
+    - name: Crear directorio para las llaves 
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        mode: '0755'
+        state: directory
+
+    - name: Descargar llave GPG docker
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: 'a+r'
+
+    - name: Agregar repositorio a fuentes de APT
+      blockinfile:
+        path: /etc/apt/sources.list.d/docker.sources
+        create: yes
+        mode: '0644'
+        block: |
+          Types: deb
+          URIs: https://download.docker.com/linux/ubuntu
+          Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+          Components: stable
+          Architectures: $(dpkg --print-architecture)
+          Signed-By: /etc/apt/keyrings/docker.asc
+        become: true
+
+    - name: Actualizar repositorio
+      apt:
+        update_cache: true
+
+    - name: Instalacion de docker 
+      apt: 
+        pkg: 
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+
+    - name: Habilitar servicio 
+      service:
+        name: docker 
+        state: enabled
+
+    - name: Iniciar servicio
+      service:
+        name: docker
+        state: started
+
+    - name: Añadir el usuario actual al grupo docker
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+- name: Probar comandos de Docker sin sudo
+  hosts: docker
+  become: false
+  tasks:
+
+    - name: Verificar que Docker responde sin sudo
+      ansible.builtin.command: docker ps
+      register: docker_output
+
+    - name: Mostrar el resultado
+      ansible.builtin.debug:
+        var: docker_output.stdout
+
