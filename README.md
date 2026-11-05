@@ -1,14 +1,13 @@
 # Requerimiento
-Se nos solicito la implementacion de un repositorio privado, vamos a 
+Se nos solicito la implementacion de un repositorio privado, vamos a \
 implementarlo con Nexus en su version community.
 # Arquitectura
-Se debe emplear una arquitectura en donde se tenga una VPC que va contar 
-con dos Subnet's (privada y publica), esta VPC tambien va contar con dos Route Tables
-(privada y publica), se van a tener tres instancias ec2, una de las instanicas 
-se va encontrar en la subnet publica y va tener la funcion de trabajar como una
-instancia nat para que las instancias que van a estar en la subnet privada tenga
-salida a internet.
-
+Se debe emplear una arquitectura en donde se tenga una VPC que va contar \
+con dos Subnet's (privada y publica), esta VPC tambien va contar con dos Route \
+Tables (privada y publica), se van a tener tres instancias ec2, una de las \
+instanicas se va encontrar en la subnet publica y va tener la funcion de trabajar \
+como una instancia nat para que las instancias que van a estar en la subnet privada \
+tenga salida a internet. \
 ![Arquitectura](./assets/nexus.gif)
 
 # Requisitos previos 
@@ -19,16 +18,15 @@ salida a internet.
 5. Remmina
 
 # Solucion 
-Para levantar toda la arquitectura vamos a utilizar **Terraform**, de igual modo 
-vamos a necesitar que se tenga configurada **AWS CLI** con la cuenta que se va 
-utilizar para la implementacion de la infraestructura.
-Luego vamos a crear las llaves **GPG** para el la creacion de nuestro repositorio.
-Siguiendo con la instalacion vamos copiar el directorio ansible en la instancia 
-publica para la instalacion de Nexus.
-Despues de que finalice la instalacion de Nexus nos vamos a dirigir a la otra 
-instancia y vamos a realizar la configuracion necesaria para que nuestro servidor
+Para levantar toda la arquitectura vamos a utilizar **Terraform**, de igual modo \
+vamos a necesitar que se tenga configurada **AWS CLI** con la cuenta que se va \
+utilizar para la implementacion de la infraestructura. \
+Luego vamos a crear las llaves **GPG** para el la creacion de nuestro repositorio. \
+Siguiendo con la instalacion vamos copiar el directorio ansible en la instancia \
+publica para la instalacion de Nexus. \
+Despues de que finalice la instalacion de Nexus nos vamos a dirigir a la otra \
+instancia y vamos a realizar la configuracion necesaria para que nuestro servidor \
 puede instalar los paquetes de nuestro repositorio privado.
-
 # Desplegar infraestructura 
 ```
 terraform plan --out main-plan.tfplan
@@ -52,12 +50,12 @@ infocmp -x | ssh -i infra-terraform/nexus-kp.pem ubuntu@<IP PUBLICA> -- tic -x -
 ssh -i infra-terraform/nexus-kp.pem ubuntu@3.148.228.118
 ```
 ## Configurar inventory
-Se deben acutalizar las IP y realizar una prueba de ping 
+Se deben acutalizar las IP y realizar una prueba de ping.
 ```
 cd ansible
 vi inventory 
 ```
-Reemplzar las **XXX** por el dato correspondiente a la IP 
+Reemplzar las **XXX** por el dato correspondiente a la IP.
 ```
 [nexus]
 repositorio ansible_host=10.0.2.XXX ansible_user=ubuntu ansible_ssh_private_key_file=../nexus-kp.pem ansible_port=22
@@ -65,7 +63,7 @@ repositorio ansible_host=10.0.2.XXX ansible_user=ubuntu ansible_ssh_private_key_
 [docker]
 registry ansible_host=10.0.2.XXX ansible_user=ubuntu ansible_ssh_private_key_file=../nexus-kp.pem ansible_port=22
 ```
-Verificar que tenemos llegada a los servidores 
+Verificar que tenemos llegada a los servidores.
 ```
 ansible all -m ping -i inventory 
 ```
@@ -74,17 +72,17 @@ ansible all -m ping -i inventory
 ansible-playbook -i inventory playbook.yml 
 ```
 # Ingresar a la instancia publica  
-Vamos a ingresar a la instancia publica desde **Remmina** esto con el proposito de 
-configurar **Nexus** desde la UI.
-Previamente vamos a asignarle una contrasena a nuestro usuario _ubuntu_ porque nos
-lo va solicitar **Remmina**.
+Vamos a ingresar a la instancia publica desde **Remmina** esto con el proposito de \
+configurar **Nexus** desde la UI. \
+Previamente vamos a asignarle una contrasena a nuestro usuario _ubuntu_ porque \
+nos lo va solicitar **Remmina**.
 ```
 sudo passwd ubuntu 
 ```
-Le asignamos una contrasena y no la tenemos que olvidar.
+Le asignamos una contrasena y no la tenemos que olvidar. \
 Ahora si podemos ingresar desde **Remmina** y nos va solicitar usuario y contrasena.
 # Ingresar a servidor privado Nexus 
-Debemos crear las llaves PGP para configurar **Nexus**. Nos encotramos en el 
+Debemos crear las llaves PGP para configurar **Nexus**. Nos encotramos en el \
 servidor publico desde donde tenemos llegada a los servidores privados.
 ```
 infocmp -x | ssh -i nexus-kp.pem ubuntu@10.0.2.XXX -- tic -x -
@@ -108,30 +106,32 @@ gpg --armor --export-secret-keys <REEMPLAZAR IDENTIFICADOR> > mi_llave_privada.a
 gpg --armor --export <REEMPLAZAR IDENTIFICADOR> > mi_repositorio.pub
 ```
 # Configurar Nexus 
-Una ves dentro de la instancia publica abrimos el navegador y colocamos en la barra 
-de navegacion la **IP PRIVADA Y PUERTO** de la instancia donde estamos intalando 
-**Nexus**.
-Para obtener la contrasena del usuario **admin** ejecutamos el siguiente comando
+Una ves dentro de la instancia publica abrimos el navegador y colocamos en la \
+barra de navegacion la **IP PRIVADA Y PUERTO** de la instancia donde estamos \
+intalando **Nexus**. \
+Para obtener la contrasena del usuario **admin** ejecutamos el siguiente comando.
 ```
 cat /opt/sonatype-work/nexus3/admin.password
 ```
 Una ves ingresamos nos va solicitar que cambiemos la contrasena.
 ## Crear usuario
-Nos vamos a dirigir **Settings**(Rueda dentada)->Security->User luego damos click 
+Nos vamos a dirigir **Settings**(Rueda dentada)->Security->User luego damos click \
 en crear usuario.
 ## Crear repositorio Docker
-Nos dirigimos a Repositories y luego damos click sobre **Create repository** y seleccionamos _docker \(hosted\)_, rellenamos el formulario:
-**Name**: docker-repository
-**HTTP**: 5000
-**Deploymen policy**: Allow deployment 
+Nos dirigimos a Repositories y luego damos click sobre **Create repository** y \
+seleccionamos _docker \(hosted\)_, rellenamos el formulario: \
+**Name**: docker-repository \
+**HTTP**: 5000 \
+**Deploymen policy**: Allow deployment \
 Todo lo demas lo dejamos como esta y damos click sobre el boton **Create repository**.
 ## Crear repositorio APT 
-Nos dirigimos a **Repositories** y luego damos click sobre **Create repository** y seleccionamos _apt (hosted)_, le asignamos un nombre, distribucion y le agregamos 
-la llave privada (mi_llave_privada.asc)
-Despues de ser creado nuestro repositorio debemos copiar la URL para poder 
+Nos dirigimos a **Repositories** y luego damos click sobre **Create repository** y \
+seleccionamos _apt (hosted)_, le asignamos un nombre, distribucion y le agregamos \
+la llave privada (mi_llave_privada.asc). \
+Despues de ser creado nuestro repositorio debemos copiar la URL para poder \
 realizar la instalacion de los paquetes en los servidores clientes.
 # Configurar servidor cliente
-Nos ubicamos en el servidor publico y desde ahi copiamos la llave para ingresar
+Nos ubicamos en el servidor publico y desde ahi copiamos la llave para ingresar \
 al servidor cliente.
 ```
 scp -i nexus-kp.pem nexus-kp.pem ubuntu@<IP PRIVADA de la instancia cliente>:/home/ubuntu
@@ -191,10 +191,12 @@ Vamos a verificar que nuestro paquete ya esta disponible para instalarse.
 sudo apt search nginx-custom
 sudo apt install nginx-custom 
 ```
-Nos dirigimos a **Remmina**, ingresamos al servidor publico y abrimos el 
-navegador y en la barra de navegacion colocamos la **IP PRIVADA** de la instancia cliente y debe aparecer nuestro **Nginx** personalizado.
+Nos dirigimos a **Remmina**, ingresamos al servidor publico y abrimos el \
+navegador y en la barra de navegacion colocamos la **IP PRIVADA** de la instancia \
+cliente y debe aparecer nuestro **Nginx** personalizado.
 # Configurar servidor Docker
-Nos dirigimos al servidor Docker para configura lo para que pueda subir y descargar imagnes del repositorio privado.
+Nos dirigimos al servidor Docker para configura lo para que pueda subir y descargar \
+imagnes del repositorio privado.
 ## Ingresar al servidor
 Debemos estar dentro del servidor publico y desde ahi ejecutamos
 ```
