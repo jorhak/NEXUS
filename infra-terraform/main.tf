@@ -37,7 +37,7 @@ resource "aws_subnet" "private_subnet" {
 }
 
 
-# CREAMOS IGW PARA TENER SALIDA A INTERNET 
+# CREAMOS IGW PARA TENER SALIDA A INTERNET
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.nexus.id
 
@@ -63,7 +63,7 @@ resource "aws_route_table" "tabla_rutas" {
 resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.nexus.id
 
-  # Envía todo el tráfico de internet hacia la instancia pública
+  # ENVIA TODO EL TRAFICO DE INTERNET HACIA LA INSTACIA PUBLICA
   route {
     cidr_block  = "0.0.0.0/0"
     network_interface_id = aws_instance.instancia_publica.primary_network_interface_id 
@@ -76,7 +76,7 @@ resource "aws_route_table" "private_rt" {
   }
 }
 
-# AGREGAR RUTAS IGW, SUBNET PUBLIC, SUBNET PRIVATE 
+# AGREGAR RUTA DE SALIDA A INTERNET, POR IGW 
 # IGW
 resource "aws_route" "ruta_igw" {
   route_table_id         = aws_route_table.tabla_rutas.id
@@ -84,18 +84,13 @@ resource "aws_route" "ruta_igw" {
   gateway_id             = aws_internet_gateway.gw.id 
 }
 
-# SUBNET PUBLIC
+# ASOCIASR ROUTE TABLE A SUBNET PUBLIC
 resource "aws_route_table_association" "ruta_subnet_public" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.tabla_rutas.id
 }
 
-# SUBNET PRIVATE
-#resource "aws_route_table_association" "ruta_subnet_private" {
-#  subnet_id      = aws_subnet.private_subnet.id
-#  route_table_id = aws_route_table.tabla_rutas.id
-#}
-# 
+# ASOCIAR ROUTE TABLE A SUBNET PRIVATE
 resource "aws_route_table_association" "ruta_subnet_private" {
   subnet_id      = aws_subnet.private_subnet.id
   route_table_id = aws_route_table.private_rt.id
@@ -114,6 +109,7 @@ resource "aws_security_group" "permisos" {
   }
 }
 
+# CREA REGLA PARA QUE LOS QUE UTILICEN EL SG TENGAN LLEGADA ENTRE SI
 resource "aws_vpc_security_group_ingress_rule" "comunicacion_interna" {
   security_group_id = aws_security_group.permisos.id
 
@@ -124,6 +120,7 @@ resource "aws_vpc_security_group_ingress_rule" "comunicacion_interna" {
   ip_protocol = "-1" # Permite todos los protocolos y todos los puertos internamente
 }
 
+# CREA REGLA DE SALIDA 
 resource "aws_vpc_security_group_egress_rule" "salida_libre" {
   security_group_id = aws_security_group.permisos.id
   cidr_ipv4         = "0.0.0.0/0"
